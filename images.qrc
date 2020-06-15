@@ -1,0 +1,14 @@
+<RCC>
+    <qresource prefix="/main">
+        <file>src/assets/images/background.jpg</file>
+        <file>src/assets/images/hint_icon.png</file>
+        <file>src/assets/images/clear_icon.png</file>
+        <file>src/assets/images/active_hint_icon.png</file>
+        <file>src/assets/images/active_clear_icon.png</file>
+        <file>src/assets/images/undo_icon.png</file>
+        <file>src/assets/images/active_undo_icon.png</file>
+        <file>src/assets/images/sudoku_logo.png</file>
+        <file>src/assets/images/splash_screen.png</file>
+        <file>src/assets/images/question_mark.png</file>
+    </qresource>
+</RCC>
