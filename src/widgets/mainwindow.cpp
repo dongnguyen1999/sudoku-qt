@@ -41,7 +41,7 @@ void MainWindow::showSplashScreen() {
     delay(2);
     ui->boardContainer->setHidden(false);
     ui->controlPane->setHidden(false);
-    ui->centralWidget->setStyleSheet("border-image: url(:/main/src/assets/images/background.jpg) 0 0 0 0 stretch stretch;background-repeat: no-repeat;");
+    ui->centralWidget->setStyleSheet("#centralWidget {border-image: url(:/main/src/assets/images/background.jpg) 0 0 0 0 stretch stretch;background-repeat: no-repeat;}");
 }
 
 void MainWindow::resizeEvent(QResizeEvent *event) {

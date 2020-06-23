@@ -203,7 +203,7 @@ void UICell::refresh() {
     if (value == EMPTY) return;
     if (enable && checkValue(value)) {
         onConflict = false;
-        parent->addConstrains(position);
+        parent->addConstrains(position);        
         bodyStyle = CellStyles::common();
         textStyle = CellStyles::valueText(30, Qt::black);
     }
@@ -212,7 +212,9 @@ void UICell::refresh() {
         bodyStyle = CellStyles::error();
         textStyle = CellStyles::valueText(30, Qt::white);
     }
-    setStyleSheet(bodyStyle);
-    valueLabel->setStyleSheet(textStyle);
+    if (!onHighLight) {
+        setStyleSheet(bodyStyle);
+        valueLabel->setStyleSheet(textStyle);
+    }
     repaint();
 }

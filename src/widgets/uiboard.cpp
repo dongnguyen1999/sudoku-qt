@@ -202,7 +202,6 @@ bool UIBoard::hint() {
     vector<int> sortedValues = sort(availables, valueCount);
     if (sortedValues.size() == 0) return false;
     value = sortedValues[0];
-
     if (inEditMode()) exitEditMode();
     select(hintPos)->mousePressEvent(NULL);
     callClickedValue(value);
