@@ -6,45 +6,58 @@
 #include <QLabel>
 #include <QHoverEvent>
 #include <QDebug>
-#include "src/widgets/styles/cell.h"
-
+#include "src/widgets/styles/cell_styles.h"
 int counter = 0;
 
-UICell::UICell(Cell c, UIBoard *papa)
+UICell::UICell(Coord pos, UIBoard *papa, int value, bool fixed)
 {
     parent = papa;
-    cell = c;
+    position = pos;
+    enable = !fixed;
+    if (!enable) {
+        bodyStyle = CellStyles::fixed();
+        textStyle = CellStyles::valueText(30, Qt::white);
+    }
     setAttribute(Qt::WA_Hover, true);
-    setStyleSheet(CellStyles::common);
+    setStyleSheet(bodyStyle);
     questionIcon = CellStyles::loadQuestionIcon();
-    value = new QLabel;
-    value->setText(QString("1"));
-    value->setStyleSheet(CellStyles::valueText(30, Qt::black));
+    valueLabel = CellStyles::makeNumberLabel(value, textStyle);
     QVBoxLayout* layout = new QVBoxLayout;
-    layout->addWidget(value);
+    layout->SetFixedSize;
+    layout->setMargin(3);
     setLayout(layout);
+    showValueLabel();
 }
 
 //https://stackoverflow.com/questions/55999683/qgridlayout-addwidgetcustomwidget-is-not-working
 void UICell::paintEvent(QPaintEvent *) {
-//    if (cell.getPosition().x == 0 && cell.getPosition().y == 0)
+//    if (position.x == 0 && position.y == 0)
 //    qDebug() << "paintEvent board " << counter++;
     QStyleOption opt;
     opt.init(this);
     QPainter p(this);
     style()->drawPrimitive(QStyle::PE_Widget, &opt, &p, this);
     if (onEditing) {
-        setStyleSheet(CellStyles::common);
-        showQuestionMark();
+        if (getValue() != EMPTY && onConflict) {
+            setStyleSheet(CellStyles::hoverError());
+            valueLabel->setStyleSheet(CellStyles::valueText(30, Qt::black));
+        } else if (getValue() != EMPTY && !onConflict) {
+            setStyleSheet(CellStyles::valid());
+            valueLabel->setStyleSheet(CellStyles::valueText(30, Qt::black));
+        }
+        else setStyleSheet(CellStyles::hover());
+        if (getValue() == EMPTY) showQuestionMark();
     }
 }
 
 bool UICell::event(QEvent *e) {
     switch(e->type()) {
         case QEvent::HoverEnter:
+            if (!enable) return true;
             hoverEnter(static_cast<QHoverEvent*>(e));
             return true;
         case QEvent::HoverLeave:
+            if (!enable) return true;
             hoverLeave(static_cast<QHoverEvent*>(e));
             return true;
         default:
@@ -63,50 +76,43 @@ void UICell::timerEvent(QTimerEvent *){
 }
 
 void UICell::showQuestionMark() {
-    layout()->removeWidget(questionIcon);
+    removeValueLabel();
     layout()->addWidget(questionIcon);
     layout()->setMargin(questionMarkMargin*size().width());
     if (timerId == NULL_ID) timerId = startTimer(400);
 }
 
 void UICell::hoverEnter(QHoverEvent *e) {
-    if (parent && !parent->inEditMode() && !onHover) {
-        setHover(true);
-        parent->highLightRCA(cell, true);
+    if (parent && !parent->inEditMode()) {
+        parent->highLightRCA(position, true);
     }
 }
 
 void UICell::hoverLeave(QHoverEvent *e) {
-    if (parent && !parent->inEditMode() && onHover) {
-        setHover(false);
-        parent->highLightRCA(cell, false);
+    if (parent && !parent->inEditMode()) {
+        parent->highLightRCA(position, false);
     }
 }
 
-void UICell::highLight(bool flag) {
-    if (!onEditing && onHighLight != flag && !onHover) {
+void UICell::highLight(bool flag, QString bodyStyle, QString textStyle) {
+    if (onHighLight != flag) {
         if (onHighLight) {
-            setStyleSheet(CellStyles::common);
-        } else setStyleSheet(CellStyles::highLight(hoverColor));
+            setStyleSheet(this->bodyStyle);
+            valueLabel->setStyleSheet(this->textStyle);
+        } else {
+            setStyleSheet(bodyStyle.length() == 0 ? this->bodyStyle : bodyStyle);
+            valueLabel->setStyleSheet(textStyle.length() == 0 ? this->textStyle : textStyle);
+        }
         onHighLight = flag;
         repaint();
     }
 }
 
-void UICell::setHover(bool flag) {
-    if (!onEditing && onHover != flag) {
-        if (onHover) {
-            setStyleSheet(CellStyles::common);
-        } else setStyleSheet(CellStyles::highLight(Qt::yellow) + CellStyles::hoverBorder);
-        onHover = flag;
-        repaint();
-    }
-}
-
 void UICell::mousePressEvent(QMouseEvent *) {
+    if (!enable) return;
     if (parent && !parent->inEditMode()) {
-        parent->turnToEditMode(cell);
         onEditing = true;
+        parent->turnToEditMode(position);
         repaint();
     } else if (parent) {
         parent->exitEditMode();
@@ -115,11 +121,98 @@ void UICell::mousePressEvent(QMouseEvent *) {
 
 void UICell::exitEditMode() {
     if (onEditing) {
-        delete questionIcon;
-        questionIcon = CellStyles::loadQuestionIcon();
         onEditing = false;
-        killTimer(timerId);
-        timerId = NULL_ID;
+        removeQuestionMark();
+        showValueLabel();
+        if (timerId != NULL_ID) {
+            killTimer(timerId);
+            timerId = NULL_ID;
+        }
         repaint();
     }
+}
+
+int UICell::getValue() {
+    if (!valueLabel) return 0;
+    return valueLabel->text().toInt();
+}
+
+void UICell::setValue(int val) {
+    if (getValue() != val) {
+//        parent->refresh();
+        removeQuestionMark();
+        removeValueLabel();
+        valueLabel = CellStyles::makeNumberLabel(val);
+        showValueLabel();
+        if (getValue() == 0) {
+            onConflict = false;
+            parent->removeConstrains(position);
+            bodyStyle = CellStyles::common();
+            textStyle = CellStyles::valueText(30, Qt::black);
+        }
+        else if (checkValue(val)) {
+            onConflict = false;
+            parent->addConstrains(position);
+            bodyStyle = CellStyles::common();
+            textStyle = CellStyles::valueText(30, Qt::black);
+        }
+        else {
+            onConflict = true;
+            bodyStyle = CellStyles::error();
+            textStyle = CellStyles::valueText(30, Qt::white);
+        }
+//        qDebug() << onConflict;
+        setStyleSheet(bodyStyle);
+        valueLabel->setStyleSheet(textStyle);
+        parent->refresh();
+    }
+}
+
+void UICell::removeQuestionMark() {
+    delete questionIcon;
+    questionIcon = CellStyles::loadQuestionIcon();
+    layout()->setMargin(3);
+}
+
+void UICell::removeValueLabel() {
+    int value = getValue();
+    delete valueLabel;
+    valueLabel = CellStyles::makeNumberLabel(value, textStyle);
+}
+
+void UICell::showValueLabel() {
+    if (getValue() != EMPTY) {
+        layout()->addWidget(valueLabel);
+    }
+}
+
+bool UICell::isOnConflict() {
+    return onConflict;
+}
+
+bool UICell::checkValue(int value) {
+    vector<int> availables = parent->getAvailables(position);
+    for (int i = 0; i < availables.size(); i++) {
+        if (availables[i] == value) return true;
+    }
+    return false;
+}
+
+void UICell::refresh() {
+    int value = getValue();
+    if (value == EMPTY) return;
+    if (enable && checkValue(value)) {
+        onConflict = false;
+        parent->addConstrains(position);
+        bodyStyle = CellStyles::common();
+        textStyle = CellStyles::valueText(30, Qt::black);
+    }
+    else if (enable) {
+        onConflict = true;
+        bodyStyle = CellStyles::error();
+        textStyle = CellStyles::valueText(30, Qt::white);
+    }
+    setStyleSheet(bodyStyle);
+    valueLabel->setStyleSheet(textStyle);
+    repaint();
 }

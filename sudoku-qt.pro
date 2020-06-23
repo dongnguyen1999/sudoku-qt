@@ -3,7 +3,6 @@
 # Project created by QtCreator 2020-06-03T11:07:35
 #
 #-------------------------------------------------
-include(src/modules/Modules.pri)
 QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
@@ -18,12 +17,13 @@ SOURCES += main.cpp\
     src/widgets/uicell.cpp
 
 HEADERS  += mainwindow.h \
-    src/modules/board.h \
-    src/modules/cell.h \
+    src/modules/constrains.h \
+    src/modules/changed.h \
+    src/modules/coord.h \
     src/widgets/mainwindow.h \
     src/widgets/uicell.h \
     src/widgets/uiboard.h \
-    src/widgets/styles/cell.h
+    src/widgets/styles/cell_styles.h
 
 FORMS    += mainwindow.ui
 

@@ -2,9 +2,10 @@
 #define UICELL_H
 
 #include <QWidget>
-#include <QLabel>
 #include "src/widgets/uiboard.h"
-#include "src/modules/cell.h"
+#include "src/widgets/styles/cell_styles.h"
+#include "src/modules/coord.h"
+#include <QLabel>
 #define NULL_ID -1
 
 class UIBoard;
@@ -13,32 +14,40 @@ class UICell : public QWidget
 {
     Q_OBJECT
 public:
-    explicit UICell(Cell cell, UIBoard* parent = 0);
+    explicit UICell(Coord position, UIBoard* parent = 0, int value = 0, bool fixed = false);
     void paintEvent(QPaintEvent *);
     void timerEvent(QTimerEvent *);
     void hoverEnter(QHoverEvent *e);
     void hoverLeave(QHoverEvent *e);
+    void setValue(int val);
+    int getValue();
     void showQuestionMark();
-    void setHover(bool flag);
-    void highLight(bool flag);
+    void showValueLabel();
+    void removeQuestionMark();
+    void removeValueLabel();
+    void highLight(bool flag, QString bodyStyle = "", QString textStyle = "");
     void exitEditMode();
     bool event(QEvent *);
     void mousePressEvent(QMouseEvent *);
+    bool isOnConflict();
+    bool checkValue(int val);
+    void refresh();
 private:
     UIBoard* parent;
-    Cell cell;
+    Coord position;
     QWidget* questionIcon;
-    QLabel* value;
+    QLabel* valueLabel;
 
     //state
-    bool onHover = false;
+    bool enable;
     bool onHighLight = false;
-    QColor hoverColor = QColor::fromRgba(qRgba(230,230,230,0.25));
     bool onConflict = false;
     bool onEditing = false;
     int timerId = NULL_ID;
     bool blink = true;
     double questionMarkMargin = 0.2;
+    QString bodyStyle = CellStyles::common();
+    QString textStyle = CellStyles::valueText(30, Qt::black);
 
 signals:
 

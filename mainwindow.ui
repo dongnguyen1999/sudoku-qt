@@ -153,7 +153,7 @@
            <height>200</height>
           </size>
          </property>
-         <layout class="QVBoxLayout" name="verticalLayout_3" stretch="0,0">
+         <layout class="QVBoxLayout" name="verticalLayout_3" stretch="0">
           <property name="spacing">
            <number>10</number>
           </property>
@@ -196,36 +196,6 @@
             </property>
             <property name="text">
              <string>New game</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="btSolve">
-            <property name="minimumSize">
-             <size>
-              <width>30</width>
-              <height>0</height>
-             </size>
-            </property>
-            <property name="styleSheet">
-             <string notr="true">#btSolve {
-      background-color: #131d60;
-      border-radius: 10px;
-	  color: white;
-      font-weight: bold;
-      border-style: solid;
-      border-color: #131d60;
-      border-width: 2px;
-	  padding: 5px;
-    }
-#btSolve:pressed {
-	background-color: rgba(99,99,99,0.2);
-	border-width: 4px;
-	color: #131d60;
-}</string>
-            </property>
-            <property name="text">
-             <string>Solve</string>
             </property>
            </widget>
           </item>

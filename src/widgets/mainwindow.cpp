@@ -1,4 +1,4 @@
-#include "mainwindow.h"
+#include "src/widgets/mainwindow.h"
 #include "ui_mainwindow.h"
 #include "src/widgets/uicell.h"
 #include<QDebug>
@@ -19,7 +19,6 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     setWindowTitle("Sudoku QT");
-    ui->board->build();
 }
 
 
@@ -42,7 +41,7 @@ void MainWindow::showSplashScreen() {
     delay(2);
     ui->boardContainer->setHidden(false);
     ui->controlPane->setHidden(false);
-    ui->centralWidget->setStyleSheet("#centralWidget {border-image: url(:/main/src/assets/images/background.jpg) 0 0 0 0 stretch stretch;background-repeat: no-repeat;}");
+    ui->centralWidget->setStyleSheet("border-image: url(:/main/src/assets/images/background.jpg) 0 0 0 0 stretch stretch;background-repeat: no-repeat;");
 }
 
 void MainWindow::resizeEvent(QResizeEvent *event) {
@@ -51,4 +50,70 @@ void MainWindow::resizeEvent(QResizeEvent *event) {
     int offset = (containerSize.width()- ui->board->size().width())/2;
     ui->board->move(offset* sqrt(2), 0);
     ui->controlPane->resize(QSize(ui->controlPane->size().width()+offset/2, ui->controlPane->size().height()));
+//    ui->board->refresh();
+}
+
+void MainWindow::on_btNum1_clicked()
+{
+    ui->board->callClickedValue(1);
+}
+
+void MainWindow::on_btNum2_clicked()
+{
+    ui->board->callClickedValue(2);
+}
+
+void MainWindow::on_btNum3_clicked()
+{
+    ui->board->callClickedValue(3);
+}
+
+void MainWindow::on_btNum4_clicked()
+{
+    ui->board->callClickedValue(4);
+}
+
+void MainWindow::on_btNum5_clicked()
+{
+    ui->board->callClickedValue(5);
+}
+
+void MainWindow::on_btNum6_clicked()
+{
+    ui->board->callClickedValue(6);
+}
+
+void MainWindow::on_btNum7_clicked()
+{
+    ui->board->callClickedValue(7);
+}
+
+void MainWindow::on_btNum8_clicked()
+{
+    ui->board->callClickedValue(8);
+}
+
+void MainWindow::on_btNum9_clicked()
+{
+    ui->board->callClickedValue(9);
+}
+
+void MainWindow::on_btClear_clicked()
+{
+    ui->board->callClickedValue(0);
+}
+
+void MainWindow::on_btNewGame_clicked()
+{
+    ui->board->startNewGame();
+}
+
+void MainWindow::on_btHint_clicked()
+{
+    ui->board->hint();
+}
+
+void MainWindow::on_btUndo_clicked()
+{
+    ui->board->undo();
 }
