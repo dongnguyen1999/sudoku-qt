@@ -61,7 +61,6 @@ bool UICell::event(QEvent *e) {
             hoverLeave(static_cast<QHoverEvent*>(e));
             return true;
         default:
-//            qDebug() << e->type();
             break;
     }
     return QWidget::event(e);

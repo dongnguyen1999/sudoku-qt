@@ -18,6 +18,7 @@ SOURCES += main.cpp\
 
 HEADERS  += mainwindow.h \
     src/modules/constrains.h \
+    src/modules/sudoku_generator.h \
     src/modules/changed.h \
     src/modules/coord.h \
     src/widgets/mainwindow.h \

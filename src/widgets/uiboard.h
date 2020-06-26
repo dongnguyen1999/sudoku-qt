@@ -18,8 +18,8 @@ class UIBoard : public QWidget
 public:
     explicit UIBoard(QWidget *parent = 0);
     void paintEvent(QPaintEvent *);
-    void build();
     void init();
+    void build();
     QWidget* buildArea(int xArea, int yArea);
 
     void highLightRCA(Coord position, bool willHover);
@@ -33,10 +33,10 @@ public:
     void addConstrains(Coord pos);
     void removeConstrains(Coord pos);
     bool isCorrect();
-//    void solve();
+    void showResult();
     bool hint();
     void undo();
-    void startNewGame(bool defaultInp = false);
+    void startNewGame();
     void showDialog();
     void refresh();
 
@@ -46,7 +46,9 @@ private:
     Constrains constrains;
     stack<Changed> changeHistory;
 
-    int inputs[NB_ROWS][NB_COLUMNS];
+    int puzzle[NB_ROWS][NB_COLUMNS];
+    int result[NB_ROWS][NB_COLUMNS];
+
     int defaultInput[NB_ROWS][NB_COLUMNS] = {
           {5, 3, 0, 0, 7, 0, 0, 0, 0},
           {6, 0, 0, 1, 9, 5, 0, 0, 0},
@@ -64,9 +66,6 @@ private:
     bool onEditing = false;
     Coord editingPosition;
 
-    vector<int> sort(vector<int> availables, int valueCount[]);
-    int random(int);
-    bool checkInputValue(Coord pos, int value);
     void clearLayout(QLayout*);
 
 signals:

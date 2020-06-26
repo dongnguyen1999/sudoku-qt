@@ -117,3 +117,8 @@ void MainWindow::on_btUndo_clicked()
 {
     ui->board->undo();
 }
+
+void MainWindow::on_btSolve_clicked()
+{
+    ui->board->showResult();
+}

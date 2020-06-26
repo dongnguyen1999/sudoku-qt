@@ -1,5 +1,5 @@
 #include <iostream>
-#include <list>
+#include <vector>
 #include "coord.h"
 using namespace std;
 #ifndef MODULE_CONSTRAIN_CLASS
@@ -9,6 +9,24 @@ class Constrains {
     int data[NB_ROWS*NB_COLUMNS][NB_ROWS*NB_COLUMNS];
     Coord positions[NB_ROWS*NB_COLUMNS];
     int n;
+
+    void addConstrain(int u, int v) {
+      data[u][v] = 1;
+      data[v][u] = 1;
+    }
+
+    void removeConstrain(int u, int v) {
+      data[u][v] = 0;
+      data[v][u] = 0;
+    }
+    
+    vector<Coord> getConstrains(int u) {
+      vector<Coord> result;
+      for (int i = 0; i < n; i ++) {
+        if (data[u][i] == 1) result.push_back(getCellPosition(i));
+      }
+      return result;
+    }
 
   public:
     Constrains(int n = NB_ROWS*NB_COLUMNS) {
@@ -26,33 +44,15 @@ class Constrains {
       }
     }
 
-    void addConstrain(int u, int v) {
-      data[u][v] = 1;
-      data[v][u] = 1;
-    }
-
     void addConstrain(Coord pos1, Coord pos2) {
       addConstrain(indexOfCell(pos1), indexOfCell(pos2));
-    }
-
-    void removeConstrain(int u, int v) {
-      data[u][v] = 0;
-      data[v][u] = 0;
     }
 
     void removeConstrain(Coord pos1, Coord pos2) {
       removeConstrain(indexOfCell(pos1), indexOfCell(pos2));
     }
 
-    list<int> getConstrains(int u) {
-      list<int> result;
-      for (int i = 0; i < n; i ++) {
-        if (data[u][i] == 1) result.push_back(i);
-      }
-      return result;
-    }
-
-    list<int> getConstrains(Coord pos) {
+    vector<Coord> getConstrains(Coord pos) {
       return getConstrains(indexOfCell(pos));
     }
 

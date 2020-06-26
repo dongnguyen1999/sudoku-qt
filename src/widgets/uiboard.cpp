@@ -6,6 +6,7 @@
 #include <QDialog>
 #include <QPushButton>
 #include "src/widgets/styles/cell_styles.h"
+#include "src/modules/sudoku_generator.h"
 int counter1 = 0;
 
 UIBoard::UIBoard(QWidget *parent) :
@@ -16,14 +17,14 @@ UIBoard::UIBoard(QWidget *parent) :
     layout->setHorizontalSpacing(4);
     layout->setVerticalSpacing(4);
     setLayout(layout);
-    startNewGame(DEFAULT_INPUT);
+    startNewGame();
 }
 
 void UIBoard::init() {
     constrains.clear();
     for (int i = 0; i < NB_ROWS; i++) {
         for (int j = 0; j < NB_COLUMNS; j++) {
-            cells[i][j] = new UICell(Coord(i,j), this, inputs[i][j], inputs[i][j] != EMPTY);
+            cells[i][j] = new UICell(Coord(i,j), this, puzzle[i][j], puzzle[i][j] != EMPTY);
             addConstrains(Coord(i,j));
         }
     }
@@ -126,29 +127,14 @@ void UIBoard::hover(UICell *cell, int value, bool flag) {
     else cell->highLight(flag, bodyStyle, textStyle);
 }
 
-void UIBoard::startNewGame(bool defaultInp) {
-    if (defaultInp) {
-        for (int i = 0; i < NB_ROWS; i++) {
-          for (int j = 0; j < NB_COLUMNS; j++) {
-              inputs[i][j] = defaultInput[i][j];
-          }
-        }
-    } else {
-        for (int i = 0; i < NB_ROWS; i++) {
-          for (int j = 0; j < NB_COLUMNS; j++) {
-              inputs[i][j] = EMPTY;
-          }
-        }
-        for (int k = 0; k < 30; k++) {
-          Coord position;
-          int value;
-          do {
-            position = Coord(random(NB_ROWS),random(NB_COLUMNS));
-          } while (inputs[position.x][position.y] != EMPTY);
-          do {
-              value = random(10);
-          } while (!checkInputValue(position, value));
-          inputs[position.x][position.y] = value;
+void UIBoard::startNewGame() {
+    SudokuGenerator generator;
+    int** sudoku = generator.generateSudoku();
+    int** inputs = generator.generateSudokuPuzzleFrom(sudoku);
+    for (int i = 0; i < NB_ROWS; i++) {
+        for (int j = 0; j < NB_COLUMNS; j++) {
+            result[i][j] = sudoku[i][j];
+            puzzle[i][j] = inputs[i][j];
         }
     }
     init();
@@ -166,24 +152,10 @@ bool UIBoard::isCorrect() {
     return true;
 }
 
-vector<int> UIBoard::sort(vector<int> availables, int valueCount[]) {
-  for (int i = 0; i < availables.size(); i++) {
-    for (int j = i; j < availables.size(); j++) {
-      if (valueCount[availables[i]] > valueCount[availables[j]]) {
-        int t = availables[i];
-        availables[i] = availables[j];
-        availables[j] = t;
-      }
-    }
-  }
-  return availables;
-}
-
 bool UIBoard::hint() {
     if (isCorrect()) return false;
     int min = INF;
     Coord hintPos;
-    int valueCount[MAX_VALUE] = {};
     for (int i = 0; i < NB_ROWS; i++) {
         for (int j = 0; j < NB_ROWS; j++) {
             if (cells[i][j]->getValue() == EMPTY || cells[i][j]->isOnConflict()) {
@@ -192,16 +164,12 @@ bool UIBoard::hint() {
                 min = availables.size();
                 hintPos = Coord(i,j);
               }
-            } else valueCount[cells[i][j]->getValue()]++;
+            }
         }
     }
     // had hintPos
     if (hintPos.isNull()) return false;
-    int value;
-    vector<int> availables = getAvailables(hintPos);
-    vector<int> sortedValues = sort(availables, valueCount);
-    if (sortedValues.size() == 0) return false;
-    value = sortedValues[0];
+    int value = result[hintPos.x][hintPos.y];
     if (inEditMode()) exitEditMode();
     select(hintPos)->mousePressEvent(NULL);
     callClickedValue(value);
@@ -209,12 +177,12 @@ bool UIBoard::hint() {
 }
 
 vector<int> UIBoard::getAvailables(Coord position) {
-  list<int> idxs = constrains.getConstrains(position);
+  vector<Coord> posList = constrains.getConstrains(position);
   vector<int> result;
   bool check[MAX_VALUE];
   for (int i = 0; i < MAX_VALUE; i++) check[i] = true;
-  for (list<int>::iterator i = idxs.begin(); i != idxs.end(); i++) {
-    Coord csPosition = constrains.getCellPosition(*i);
+  for (int i = 0; i < posList.size(); i++) {
+    Coord csPosition = posList[i];
     int value = select(csPosition)->getValue();
     if (value != EMPTY) check[value] = false;
   }
@@ -272,10 +240,6 @@ void UIBoard::removeConstrains(Coord pos){
     }
 }
 
-int UIBoard::random(int n) {
-  return rand() % n;
-}
-
 void UIBoard::clearLayout(QLayout *layout) {
     QLayoutItem *item;
     while((item = layout->takeAt(0))) {
@@ -288,29 +252,6 @@ void UIBoard::clearLayout(QLayout *layout) {
         }
         delete item;
     }
-}
-
-bool UIBoard::checkInputValue(Coord pos, int value) {
-    int row = pos.x, column = pos.y;
-    for (int i = 0; i < NB_ROWS; i++) {
-      if (i != row) {
-          if (inputs[i][column] == value) return false;
-      }
-    }
-    for (int i = 0; i < NB_COLUMNS; i++) {
-      if (i != column) {
-          if (inputs[row][i] == value) return false;
-      }
-    }
-    for (int i = 0; i < AREA_SQUARE_SIZE; i++) {
-      for (int j = 0; j < AREA_SQUARE_SIZE; j++) {
-        int areaX = (row/AREA_SQUARE_SIZE) * AREA_SQUARE_SIZE;
-        int areaY = (column/AREA_SQUARE_SIZE) * AREA_SQUARE_SIZE;
-        if (areaX+i != row || areaY+j != column)
-            if (inputs[areaX+i][areaY+j] == value) return false;
-      }
-    }
-    return true;
 }
 
 void UIBoard::undo() {
@@ -372,6 +313,17 @@ void UIBoard::refresh() {
     for (int i = 0; i < NB_ROWS; i++) {
         for (int j = 0; j < NB_COLUMNS; j++) {
             cells[i][j]->refresh();
+        }
+    }
+}
+
+void UIBoard::showResult() {
+    for (int i = 0; i < NB_ROWS; i++) {
+        for (int j = 0; j < NB_COLUMNS; j++) {
+            Coord pos(i,j);
+            if (select(pos)->getValue() == EMPTY) {
+                select(pos)->setValue(result[i][j]);
+            }
         }
     }
 }

@@ -1,4 +1,4 @@
-#ifndef MAINWINDOW_H
+    #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
 #include <QMainWindow>
@@ -16,9 +16,6 @@ public:
     void resizeEvent(QResizeEvent*);
     void showSplashScreen();
     void delay(int second);
-    void buildAreasGrid();
-    QWidget* buildArea();
-    QWidget* buildCell();
 
     ~MainWindow();
 
@@ -48,6 +45,8 @@ private slots:
     void on_btHint_clicked();
 
     void on_btUndo_clicked();
+
+    void on_btSolve_clicked();
 
 private:
     Ui::MainWindow *ui;
